@@ -15,6 +15,7 @@ public class FileReader {
         try (BufferedReader br = Files.newBufferedReader(Path.of(path))) {
             String line;
             List<Skater> result = new ArrayList<>();
+            br.readLine();
             while ((line = br.readLine()) != null) {
                 result.add(createSkater(line));
             }

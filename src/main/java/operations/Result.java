@@ -1,10 +1,12 @@
 package operations;
 
 import fileinputoutput.FileReader;
+import lombok.Getter;
 import skater.Skater;
 
 import java.util.*;
 
+@Getter
 public class Result {
     private FileReader reader;
     private List<Skater> shortProgram;
@@ -28,8 +30,8 @@ public class Result {
     public double getTotalPointsForSkater(String name) {
         Optional<Skater> skater = findSkaterByName(shortProgram, name);
         Optional<Skater> skaterInFinal = findSkaterByName(finals, name);
-        double shortProgramPoints = skater.isPresent() ? calculatePoints(skater.get()) : 0;
-        double finalsProgramPoints = skaterInFinal.isPresent() ? calculatePoints(skaterInFinal.get()) : 0;
+        double shortProgramPoints = skater.isPresent() ? (skater.get().getTotalpoints()) : 0;
+        double finalsProgramPoints = skaterInFinal.isPresent() ? (skaterInFinal.get().getTotalpoints()) : 0;
         return shortProgramPoints + finalsProgramPoints;
     }
 
@@ -37,7 +39,6 @@ public class Result {
         Scanner sc = new Scanner(System.in);
         System.out.println("Kérem a versenyző nevét: ");
         String input = sc.nextLine();
-        System.out.println(input);
         sc.close();
         if (findSkaterByName(shortProgram, input).isEmpty()) {
             return "Ilyen nevű induló nem volt!";
@@ -53,9 +54,32 @@ public class Result {
         return statistics;
     }
 
+    public List<String> createFinalResultInString(List<Skater> finalists) {
+        List<Skater> finalistsInOrder = getFinalResultInOrder(finalists);
+        return getFinalistsInStringInOrder(finalistsInOrder);
+    }
 
-    private double calculatePoints(Skater skater) {
-        return skater.getTechnicalPoints() + skater.getComponentPoints() - skater.getErrors();
+    private List<String> getFinalistsInStringInOrder(List<Skater> finalists) {
+        List<String> result = new ArrayList<>();
+        int position = 1;
+        for (Skater actual : finalists) {
+            StringBuilder sb = new StringBuilder();
+            sb.append(position + ";");
+            sb.append(actual.getName() + ";" + actual.getCountryCode() + ";" + getTotalPointsForSkater(actual.getName()));
+            result.add(sb.toString());
+            position++;
+        }
+        return result;
+    }
+
+    private List<Skater> getFinalResultInOrder(List<Skater> finalistSkaters) {
+        List<Skater> result = new ArrayList<>();
+        for (Skater actual : finalistSkaters) {
+            double totalPoints = getTotalPointsForSkater(actual.getName());
+            result.add(new Skater(actual.getName(), actual.getCountryCode(), totalPoints));
+        }
+        return result.stream().sorted().toList();
+
     }
 
     private Optional<Skater> findSkaterByName(List<Skater> skaters, String name) {
